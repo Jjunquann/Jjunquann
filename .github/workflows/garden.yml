@@ -1,0 +1,20 @@
+name: Grow commit tree
+on:
+  schedule: [{cron: '23 4 * * *'}]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  garden:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 generators/garden.py "${{ github.repository_owner }}" assets/garden
+        env: {GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'}
+      - name: Cache-bust README image links
+        run: |
+          h=$(sha1sum assets/garden/garden-dark.svg | cut -c1-8)
+          sed -E -i "s#(garden-(dark|light)\.svg)(\?v=[0-9a-f]+)?\"#\1?v=$h\"#g" README.md
+      - run: |
+          git config user.name 'Bryan'; git config user.email '203243752+Jjunquann@users.noreply.github.com'
+          git add assets/garden README.md && (git diff --cached --quiet || git commit -m 'Grow commit tree' && git push)

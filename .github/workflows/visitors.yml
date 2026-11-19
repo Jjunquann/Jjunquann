@@ -1,0 +1,30 @@
+name: Visitor counter
+# Reads the profile-view count and redraws it as a pixel odometer (every 15 minutes).
+# Each run's own fetch counts as one view, so the run count is stored in offset.txt and subtracted.
+on:
+  schedule: [{cron: '*/15 * * * *'}]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  counter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Draw the counter
+        run: |
+          count=$(curl -sf "https://komarev.com/ghpvc/?username=${{ github.repository_owner }}&style=flat" | grep -o '>[0-9][0-9,]*</text>' | tail -1 | tr -dc 0-9)
+          [ -n "$count" ] || { echo "no count, keeping the last counter"; exit 1; }
+          off=$(curl -sf "https://raw.githubusercontent.com/${{ github.repository }}/counter/offset.txt" || echo 0)
+          off=$((off + 1)); n=$((count - off)); [ "$n" -ge 0 ] || n=0
+          python3 generators/banner.py counter "$n"
+          mkdir -p "$RUNNER_TEMP/c" && cp assets/counter.svg "$RUNNER_TEMP/c/" && echo "$off" > "$RUNNER_TEMP/c/offset.txt"
+      - name: Publish on the counter branch
+        run: |
+          git config user.name 'Bryan'; git config user.email '203243752+Jjunquann@users.noreply.github.com'
+          git switch --quiet --orphan counter
+          git rm -rfq . 2>/dev/null || true
+          git clean -fdxq
+          cp "$RUNNER_TEMP"/c/* .
+          git add counter.svg offset.txt
+          git commit -qm 'Update counter' && git push --force origin counter

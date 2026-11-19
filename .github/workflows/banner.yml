@@ -1,0 +1,23 @@
+name: Banner time of day
+# Singapore time: day 07-17, sunset 17-20, night 20-07. GitHub delays or skips boundary-only crons by hours, so poll hourly.
+on:
+  schedule: [{cron: '7 * * * *'}]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  banner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 generators/banner.py auto
+      - name: Publish on the banner branch
+        run: |
+          git config user.name 'Bryan'; git config user.email '203243752+Jjunquann@users.noreply.github.com'
+          mkdir -p "$RUNNER_TEMP/b" && cp assets/banner.svg "$RUNNER_TEMP/b/"
+          git switch --quiet --orphan banner
+          git rm -rfq . 2>/dev/null || true
+          git clean -fdxq
+          cp "$RUNNER_TEMP/b/banner.svg" .
+          git add banner.svg
+          git commit -qm 'Update banner' && git push --force origin banner

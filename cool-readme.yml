@@ -1,0 +1,5 @@
+show: [summary, languages, weekly, streaks, contributions]
+look:
+  style: oled          # square pixels, matches the pixel-art theme
+  color: amber
+  background: 0f0d1f   # same navy as the banner and player card

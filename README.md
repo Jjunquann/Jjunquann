@@ -28,7 +28,7 @@ Save my contact from my digital business card.
 
 A sakura tree grown from my public contributions: one blossom cloud per season, oldest in the middle, newest on the outside. Refreshed nightly.
 
-<img src="./assets/garden/garden-dark.svg?v=04c94f5e" alt="Commit tree" width="100%">
+<img src="./assets/garden/garden-dark.svg?v=2148ac78" alt="Commit tree" width="100%">
 
 ## Stats
 
